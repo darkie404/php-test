@@ -1,37 +1,25 @@
 <?php
 
-$token = "7630571438:AAHeGKl7r_rbZr4hmgCWX5ldp6Bj1--33gU";
-$url = "https://api.telegram.org/bot$token/";
+// Replace with your Telegram bot token
+$token = '7630571438:AAHeGKl7r_rbZr4hmgCWX5ldp6Bj1--33gU';
+$chat_id = '6358629176';
+$message = 'Hello from PHP!';
 
-function sendMessage($chat_id, $text) {
-    global $url;
-    $send_url = $url . "sendMessage";
-    $data = [
-        'chat_id' => $chat_id,
-        'text' => $text
-    ];
-    file_get_contents($send_url . '?' . http_build_query($data));
+// URL for Telegram API to send a message
+$url = "https://api.telegram.org/bot$token/sendMessage?chat_id=$chat_id&text=" . urlencode($message);
+
+// cURL setup to make the request
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+$response = curl_exec($ch);
+
+// Check for errors
+if ($response === false) {
+    echo 'cURL Error: ' . curl_error($ch);
+} else {
+    echo 'Message sent successfully!';
 }
 
-function getUpdates($offset = null) {
-    global $url;
-    $get_url = $url . "getUpdates";
-    $params = $offset ? ['offset' => $offset] : [];
-    $response = file_get_contents($get_url . '?' . http_build_query($params));
-    return json_decode($response, true)['result'];
-}
-
-function main() {
-    $last_update_id = null;
-    while (true) {
-        $updates = getUpdates($last_update_id);
-        foreach ($updates as $update) {
-            $chat_id = $update['message']['chat']['id'];
-            $text = $update['message']['text'];
-            sendMessage($chat_id, "You said: $text");
-            $last_update_id = $update['update_id'] + 1;
-        }
-    }
-}
-
-main();
+// Close cURL
+curl_close($ch);
